@@ -21,6 +21,9 @@ echo "" >> "$REPORT"
 echo "[+] TOOLS" >> "$REPORT"
 bash "$(dirname "$0")/tools.sh" >> "$REPORT" 2>&1
 
+echo "" >> "$REPORT"
+echo "[+] HEALTH SCORE" >> "$REPORT"
+bash "$(dirname "$0")/score.sh" >> "$REPORT" 2>&1
 
 echo ""
 echo "[OK] Report generated:"
