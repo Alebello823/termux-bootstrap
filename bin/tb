@@ -58,6 +58,12 @@ bash "$BASE_DIR/install.sh"
 
 ;;
 
+version)
+
+bash "$BASE_DIR/core/version.sh"
+
+;;
+
 *)
 
 echo "Uso:"
@@ -67,7 +73,7 @@ echo "tb repair   - Reparar Termux"
 echo "tb verify   - Verificar herramientas"
 echo "tb update   - Actualizar herramientas"
 echo "tb install  - Ejecutar instalación"
+echo "tb version  - Mostrar versión"
 
 ;;
-
 esac
