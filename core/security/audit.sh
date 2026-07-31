@@ -30,6 +30,9 @@ echo "[+] Checking packages"
 
 bash "$BASE_DIR/core/security/checks/packages.sh"
 
+echo
+
+bash "$BASE_DIR/core/security/checks/ssh.sh"
 
 echo
 
