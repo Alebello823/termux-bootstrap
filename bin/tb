@@ -10,11 +10,19 @@ case "$1" in
 
 doctor)
 
-echo "======================"
-echo " TERMUX DOCTOR"
-echo "======================"
+echo "================================"
+echo " TERMUX BOOTSTRAP DOCTOR"
+echo "================================"
 
 bash "$BASE_DIR/core/doctor/report.sh"
+
+echo
+
+bash "$BASE_DIR/core/doctor/summary.sh"
+
+echo
+echo "Report:"
+echo "$BASE_DIR/reports/system_report.txt"
 
 ;;
 
