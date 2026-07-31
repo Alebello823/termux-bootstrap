@@ -31,6 +31,7 @@ repair)
 repair_termux
 
 ;;
+
 backup)
 
 source "$BASE_DIR/lib/backup.sh"
@@ -56,6 +57,19 @@ install)
 
 bash "$BASE_DIR/install.sh"
 
+bash "$BASE_DIR/core/version.sh"
+
+;;
+
+security)
+
+echo "================================"
+echo " TERMUX SECURITY AUDIT"
+echo "================================"
+echo "tb security - Auditoría de seguridad"
+
+bash "$BASE_DIR/core/security/audit.sh"
+
 ;;
 
 version)
@@ -76,4 +90,5 @@ echo "tb install  - Ejecutar instalación"
 echo "tb version  - Mostrar versión"
 
 ;;
+
 esac
