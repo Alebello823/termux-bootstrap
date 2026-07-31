@@ -14,7 +14,7 @@ echo "======================"
 echo " TERMUX DOCTOR"
 echo "======================"
 
-check_system
+bash "$BASE_DIR/core/doctor/report.sh"
 
 ;;
 
