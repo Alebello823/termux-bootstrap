@@ -63,11 +63,11 @@ bash "$BASE_DIR/core/version.sh"
 
 security)
 
-echo "================================"
-echo " TERMUX SECURITY AUDIT"
-echo "================================"
+bash "$BASE_DIR/core/security/report.sh"
 
-bash "$BASE_DIR/core/security/audit.sh"
+echo
+
+cat "$BASE_DIR/reports/security_report.txt"
 
 ;;
 
