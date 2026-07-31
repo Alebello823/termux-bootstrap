@@ -43,3 +43,6 @@ logs/
 
 # Cachés
 .cache/
+
+#Report
+reports/
