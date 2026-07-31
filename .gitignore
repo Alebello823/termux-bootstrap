@@ -1,0 +1,45 @@
+# Logs
+logs/
+*.log
+
+# Backups
+termux-backups/
+
+# SSH Keys
+*.pem
+*.key
+id_rsa
+id_ed25519
+
+# Python
+__pycache__/
+*.pyc
+
+# Go
+go/pkg/
+go/bin/
+
+# Editor
+.vscode/
+.idea/
+
+# Temporary
+*.tmp
+*.swp
+
+# SSH
+*.pem
+*.key
+*.pub
+
+# Backups
+termux-backups/
+backup/
+*.bak
+
+# Logs
+logs/
+*.log
+
+# Cachés
+.cache/

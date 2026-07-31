@@ -1,0 +1,65 @@
+#!/data/data/com.termux/files/usr/bin/bash
+
+BASE_DIR="$HOME/termux-bootstrap"
+
+source "$BASE_DIR/lib/system.sh"
+source "$BASE_DIR/lib/repair.sh"
+source "$BASE_DIR/lib/verify.sh"
+
+case "$1" in
+
+doctor)
+
+echo "======================"
+echo " TERMUX DOCTOR"
+echo "======================"
+
+check_system
+
+;;
+
+repair)
+
+repair_termux
+
+;;
+backup)
+
+source "$BASE_DIR/lib/backup.sh"
+
+backup_termux
+
+;;
+verify)
+
+verify_installation
+
+;;
+
+update)
+
+source "$BASE_DIR/lib/update.sh"
+
+update_system
+
+;;
+
+install)
+
+bash "$BASE_DIR/install.sh"
+
+;;
+
+*)
+
+echo "Uso:"
+echo
+echo "tb doctor   - Diagnóstico del sistema"
+echo "tb repair   - Reparar Termux"
+echo "tb verify   - Verificar herramientas"
+echo "tb update   - Actualizar herramientas"
+echo "tb install  - Ejecutar instalación"
+
+;;
+
+esac
