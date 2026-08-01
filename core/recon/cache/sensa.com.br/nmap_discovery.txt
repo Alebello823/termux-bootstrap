@@ -1,0 +1,4 @@
+# Nmap 7.99 scan initiated Fri Jul 31 23:39:28 2026 as: nmap -Pn -T4 --open -p- -oN /data/data/com.termux/files/home/termux-bootstrap/reports/recon/sensa.com.br/nmap/discovery.txt sensa.com.br
+Failed to resolve "sensa.com.br".
+WARNING: No targets were specified, so 0 hosts scanned.
+# Nmap done at Fri Jul 31 23:39:29 2026 -- 0 IP addresses (0 hosts up) scanned in 0.56 seconds
