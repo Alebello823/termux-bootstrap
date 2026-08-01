@@ -1,0 +1,12 @@
+# Nmap 7.99 scan initiated Fri Jul 31 14:07:00 2026 as: nmap -Pn -T4 --open -p- -oN /data/data/com.termux/files/home/termux-bootstrap/reports/recon/scanme.nmap.org/nmap/discovery.txt scanme.nmap.org
+Nmap scan report for scanme.nmap.org (45.33.32.156)
+Host is up (0.46s latency).
+Other addresses for scanme.nmap.org (not scanned): 2600:3c01::f03c:91ff:fe18:bb2f
+Not shown: 49610 filtered tcp ports (no-response), 15922 closed tcp ports (conn-refused)
+Some closed ports may be reported as filtered due to --defeat-rst-ratelimit
+PORT     STATE SERVICE
+22/tcp   open  ssh
+80/tcp   open  http
+9929/tcp open  nping-echo
+
+# Nmap done at Fri Jul 31 14:52:54 2026 -- 1 IP address (1 host up) scanned in 2754.31 seconds
