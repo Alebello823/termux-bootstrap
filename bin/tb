@@ -2,92 +2,159 @@
 
 BASE_DIR="$HOME/termux-bootstrap"
 
-source "$BASE_DIR/lib/system.sh"
-source "$BASE_DIR/lib/repair.sh"
-source "$BASE_DIR/lib/verify.sh"
+source "$BASE_DIR/lib/system.sh" 2>/dev/null
+source "$BASE_DIR/lib/repair.sh" 2>/dev/null
+source "$BASE_DIR/lib/verify.sh" 2>/dev/null
+
+show_help() {
+    echo "╔══════════════════════════════════════════╗"
+    echo "║     TERMUX BOOTSTRAP TOOLKIT            ║"
+    echo "║     v0.1.0 - Multi-tool Pentest        ║"
+    echo "╚══════════════════════════════════════════╝"
+    echo ""
+    echo "USO: tb <comando> [opciones]"
+    echo ""
+    echo "COMANDOS DE SISTEMA:"
+    echo "  doctor           Diagnóstico del sistema Termux"
+    echo "  repair           Reparar instalación de Termux"
+    echo "  backup           Backup de configuración"
+    echo "  verify           Verificar herramientas instaladas"
+    echo "  update           Actualizar paquetes y herramientas"
+    echo "  install          Instalación inicial del toolkit"
+    echo "  security         Auditoría de seguridad local"
+    echo "  version          Mostrar versión del toolkit"
+    echo ""
+    echo "COMANDOS DE RECONOCIMIENTO:"
+    echo "  recon <target>   Reconocimiento completo de objetivo"
+    echo "  scan <target>    Alias para recon"
+    echo "  vuln <target>    Análisis de vulnerabilidades"
+    echo ""
+    echo "EJEMPLOS:"
+    echo "  tb doctor"
+    echo "  tb scan scanme.nmap.org"
+    echo "  tb vuln scanme.nmap.org"
+    echo "  tb security"
+    echo ""
+}
 
 case "$1" in
 
 doctor)
-
-echo "================================"
-echo " TERMUX BOOTSTRAP DOCTOR"
-echo "================================"
-
-bash "$BASE_DIR/core/doctor/report.sh"
-
-echo
-
-bash "$BASE_DIR/core/doctor/summary.sh"
-
-echo
-echo "Report:"
-echo "$BASE_DIR/reports/system_report.txt"
-
-;;
+    echo "================================"
+    echo " TERMUX BOOTSTRAP DOCTOR"
+    echo "================================"
+    bash "$BASE_DIR/core/doctor/report.sh"
+    echo
+    bash "$BASE_DIR/core/doctor/summary.sh"
+    echo
+    echo "Report: $BASE_DIR/reports/system_report.txt"
+    ;;
 
 repair)
-
-repair_termux
-
-;;
+    repair_termux
+    ;;
 
 backup)
+    source "$BASE_DIR/lib/backup.sh"
+    backup_termux
+    ;;
 
-source "$BASE_DIR/lib/backup.sh"
-
-backup_termux
-
-;;
 verify)
-
-verify_installation
-
-;;
+    verify_installation
+    ;;
 
 update)
-
-source "$BASE_DIR/lib/update.sh"
-
-update_system
-
-;;
+    source "$BASE_DIR/lib/update.sh"
+    update_system
+    ;;
 
 install)
-
-bash "$BASE_DIR/install.sh"
-
-bash "$BASE_DIR/core/version.sh"
-
-;;
+    bash "$BASE_DIR/install.sh"
+    bash "$BASE_DIR/core/version.sh"
+    ;;
 
 security)
+    bash "$BASE_DIR/core/security/report.sh"
+    echo
+    cat "$BASE_DIR/reports/security_report.txt"
+    ;;
 
-bash "$BASE_DIR/core/security/report.sh"
+recon|scan)
+    if [ -z "$2" ]; then
+        echo "[ERROR] Debes especificar un objetivo"
+        echo "Uso: tb recon <target>"
+        echo "Ejemplo: tb scan scanme.nmap.org"
+        exit 1
+    fi
+    
+    # Verificar que el engine existe
+    if [ ! -f "$BASE_DIR/core/recon/recon.sh" ]; then
+        echo "[ERROR] Recon engine not found"
+        echo "Run: tb install"
+        exit 1
+    fi
+    
+    bash "$BASE_DIR/core/recon/recon.sh" "$2"
+    ;;
 
-echo
-
-cat "$BASE_DIR/reports/security_report.txt"
-
-;;
+vuln)
+    if [ -z "$2" ]; then
+        echo "[ERROR] Debes especificar un objetivo o --service"
+        echo ""
+        echo "Uso:"
+        echo "  tb vuln <target>                    # Analizar objetivo"
+        echo "  tb vuln --service <name> <version>  # Buscar exploits"
+        echo ""
+        echo "Ejemplos:"
+        echo "  tb vuln scanme.nmap.org"
+        echo "  tb vuln --service OpenSSH 6.6.1p1"
+        exit 1
+    fi
+    
+    if [ "$2" = "--service" ]; then
+        if [ -z "$3" ] || [ -z "$4" ]; then
+            echo "[ERROR] Especifica servicio y versión"
+            echo "Ejemplo: tb vuln --service Apache 2.4.7"
+            exit 1
+        fi
+        
+        # Buscar el script de CVE lookup
+        if [ -f "$BASE_DIR/core/recon/analyzer/cve_lookup.sh" ]; then
+            bash "$BASE_DIR/core/recon/analyzer/cve_lookup.sh" --service "$3" "$4"
+        else
+            echo "[INFO] CVE lookup module not found"
+            echo "Buscando con searchsploit directamente..."
+            searchsploit "$3 $4" 2>/dev/null || echo "searchsploit no disponible"
+        fi
+    else
+        # Analizar objetivo completo
+        if [ -f "$BASE_DIR/core/recon/analyzer/cve_lookup.sh" ]; then
+            bash "$BASE_DIR/core/recon/analyzer/cve_lookup.sh" "$2"
+        else
+            echo "[ERROR] CVE lookup module not found: $BASE_DIR/core/recon/analyzer/cve_lookup.sh"
+            echo "Verifica la instalación"
+            exit 1
+        fi
+    fi
+    ;;
 
 version)
-
-bash "$BASE_DIR/core/version.sh"
-
-;;
+    bash "$BASE_DIR/core/version.sh"
+    ;;
 
 *)
+    show_help
+    ;;
 
-echo "Uso:"
-echo
-echo "tb doctor   - Diagnóstico del sistema"
-echo "tb repair   - Reparar Termux"
-echo "tb verify   - Verificar herramientas"
-echo "tb update   - Actualizar herramientas"
-echo "tb install  - Ejecutar instalación"
-echo "tb version  - Mostrar versión"
-
-;;
+# En bin/tb, añadir caso nuevo:
+exploit)
+    if [ "$2" = "hunt" ]; then
+        bash "$BASE_DIR/core/recon/analyzer/exploit_hunter.sh" hunt "$3" "$4"
+    elif [ "$2" = "generate" ]; then
+        bash "$BASE_DIR/core/recon/analyzer/exploit_hunter.sh" generate "$3" "$4" "$5"
+    else
+        bash "$BASE_DIR/core/recon/analyzer/exploit_hunter.sh" full "$2" "$3" "$4"
+    fi
+    ;;
 
 esac
