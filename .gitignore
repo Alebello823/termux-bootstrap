@@ -49,3 +49,11 @@ reports/
 
 # Recon cache
 core/recon/cache/
+
+# Generated exploit templates
+exploits/generated/
+
+# Local wordlists
+cache/wordlists/
+
+
