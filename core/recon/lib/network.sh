@@ -2,54 +2,142 @@
 
 # =====================================
 # Network Library - Centralized
+# Resolver + HTTP + TLS
 # =====================================
 
-# Resolver target a IP (múltiples métodos, NO usa ping)
+
+# Resolver target a IP
 resolve_target() {
+
     local target="$1"
     local ip=""
-    
-    # Método 1: host
+
+    if [ -z "$target" ]; then
+        echo ""
+        return
+    fi
+
+
+    # HOST
     if command -v host >/dev/null 2>&1; then
-        ip=$(host "$target" 2>/dev/null | awk '/has address/{print $NF; exit}')
+
+        ip=$(timeout 5 host "$target" 2>/dev/null \
+        | awk '/has address/ {print $NF; exit}')
+
     fi
-    
-    # Método 2: dig
+
+
+
+    # DIG fallback
     if [ -z "$ip" ] && command -v dig >/dev/null 2>&1; then
-        ip=$(dig +short "$target" A 2>/dev/null | head -1)
+
+        ip=$(timeout 5 dig +short A "$target" 2>/dev/null \
+        | grep -E '^[0-9]+\.' \
+        | head -1)
+
     fi
-    
-    # Método 3: nslookup
+
+
+
+    # NSLOOKUP fallback
     if [ -z "$ip" ] && command -v nslookup >/dev/null 2>&1; then
-        ip=$(nslookup "$target" 2>/dev/null | awk '/^Address: /{print $2}' | tail -1)
+
+        ip=$(timeout 5 nslookup "$target" 2>/dev/null \
+        | awk '/^Address: / {print $2}' \
+        | grep -E '^[0-9]+\.' \
+        | tail -1)
+
     fi
-    
-    # Método 4: Python socket
+
+
+
+    # Python fallback
     if [ -z "$ip" ]; then
-        ip=$(python3 -c "import socket; print(socket.gethostbyname('$target'))" 2>/dev/null)
+
+        ip=$(timeout 5 python3 - <<EOF
+import socket
+try:
+ print(socket.gethostbyname("$target"))
+except:
+ pass
+EOF
+)
+
     fi
-    
-    echo "$ip"
+
+
+
+    # Validación
+
+    if [[ "$ip" =~ ^[0-9]+\.[0-9]+\.[0-9]+\.[0-9]+$ ]]; then
+        echo "$ip"
+    else
+        echo ""
+    fi
+
 }
 
-# Petición HTTP con timeout y fallback
+
+
+
+# =====================================
+# HTTP Request
+# =====================================
+
 http_request() {
+
     local target="$1"
     local timeout="${2:-15}"
-    local retries="${3:-2}"
-    
-    # Intentar HTTPS primero, luego HTTP
-    curl -k -I -L --connect-timeout 5 --max-time "$timeout" --retry "$retries" \
-        "https://$target" 2>/dev/null || \
-    curl -I -L --connect-timeout 5 --max-time "$timeout" --retry "$retries" \
+
+
+
+    timeout "$timeout" curl \
+    -k \
+    -I \
+    -L \
+    --connect-timeout 5 \
+    --max-time "$timeout" \
+    --retry 1 \
+    "https://$target" 2>/dev/null
+
+
+
+    if [ $? -ne 0 ]; then
+
+        timeout "$timeout" curl \
+        -I \
+        -L \
+        --connect-timeout 5 \
+        --max-time "$timeout" \
+        --retry 1 \
         "http://$target" 2>/dev/null
+
+    fi
+
 }
 
-# Obtener certificado TLS
+
+
+
+# =====================================
+# TLS Certificate
+# =====================================
+
 get_certificate() {
+
     local target="$1"
     local timeout="${2:-10}"
-    
-    timeout "$timeout" openssl s_client -connect "${target}:443" -servername "$target" 2>/dev/null | \
-        openssl x509 -noout -subject -issuer -dates 2>/dev/null
+
+
+    timeout "$timeout" \
+    openssl s_client \
+    -connect "${target}:443" \
+    -servername "$target" \
+    </dev/null 2>/dev/null \
+    | openssl x509 \
+    -noout \
+    -subject \
+    -issuer \
+    -dates 2>/dev/null
+
 }

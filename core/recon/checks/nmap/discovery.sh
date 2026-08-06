@@ -3,13 +3,36 @@
 TARGET="$1"
 OUTPUT="$2"
 
-echo "NMAP DISCOVERY"
-echo "--------------"
+echo "NMAP FAST DISCOVERY"
+echo "-------------------"
 
-echo "[INFO] Discovering open ports"
+if [ -z "$TARGET" ]; then
+    echo "[WARN] Target missing"
+    exit 1
+fi
 
 
-nmap -Pn -T4 --open -p- "$TARGET" -oN "$OUTPUT"
+echo "[INFO] Fast port discovery"
+echo "[INFO] Mode: all TCP ports"
 
 
-echo "[OK] Discovery completed"
+nmap \
+-Pn \
+-n \
+-T4 \
+--min-rate 5000 \
+--max-retries 2 \
+--open \
+-p- \
+"$TARGET" \
+-oN "$OUTPUT"
+
+
+EXIT_CODE=$?
+
+if [ "$EXIT_CODE" -eq 0 ]; then
+    echo "[OK] Discovery completed"
+else
+    echo "[ERROR] Nmap failed (exit=$EXIT_CODE)"
+    exit "$EXIT_CODE"
+fi

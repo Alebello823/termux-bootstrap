@@ -46,3 +46,6 @@ logs/
 
 #Report
 reports/
+
+# Recon cache
+core/recon/cache/

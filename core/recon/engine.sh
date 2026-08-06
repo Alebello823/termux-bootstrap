@@ -1,7 +1,13 @@
 #!/data/data/com.termux/files/usr/bin/bash
 
 BASE_DIR="$HOME/termux-bootstrap"
+
+source "$BASE_DIR/core/recon/lib/module_runner.sh"
+source "$BASE_DIR/core/recon/lib/common.sh"
+source "$BASE_DIR/core/recon/lib/network.sh"
 source "$BASE_DIR/core/recon/config.sh"
+source "$BASE_DIR/core/recon/lib/nmap.sh"
+source "$BASE_DIR/core/recon/lib/parser.sh"
 
 TARGET="$1"
 
@@ -19,27 +25,42 @@ echo "================================"
 echo "[TARGET] $TARGET"
 echo
 
-run_module(){
-    NAME="$1"
-    SCRIPT="$2"
-    if [ ! -f "$SCRIPT" ]; then
-        echo "[WARN] Missing module: $NAME"
-        return
-    fi
-    bash "$SCRIPT" "$TARGET"
-    echo
-}
 
 # Módulos de reconocimiento pasivo
-[ "$ENABLE_WHOIS" = true ] && run_module "WHOIS" "$BASE_DIR/core/recon/checks/whois.sh"
-[ "$ENABLE_DNS" = true ] && run_module "DNS" "$BASE_DIR/core/recon/checks/dns.sh"
-[ "$ENABLE_HTTP" = true ] && run_module "HTTP" "$BASE_DIR/core/recon/checks/http.sh"
-[ "$ENABLE_HEADERS" = true ] && run_module "HEADERS" "$BASE_DIR/core/recon/checks/headers.sh"
-[ "$ENABLE_TLS" = true ] && run_module "TLS" "$BASE_DIR/core/recon/checks/tls.sh"
-[ "$ENABLE_WHATWEB" = true ] && run_module "WHATWEB" "$BASE_DIR/core/recon/checks/whatweb.sh"
+[ "$ENABLE_WHOIS" = true ] && run_module_safe "WHOIS" "$BASE_DIR/core/recon/checks/whois.sh"
+[ "$ENABLE_DNS" = true ] && run_module_safe "DNS" "$BASE_DIR/core/recon/checks/dns.sh"
+[ "$ENABLE_HTTP" = true ] && run_module_safe "HTTP" "$BASE_DIR/core/recon/checks/http.sh"
+[ "$ENABLE_HEADERS" = true ] && run_module_safe "HEADERS" "$BASE_DIR/core/recon/checks/headers.sh"
+[ "$ENABLE_TLS" = true ] && run_module_safe "TLS" "$BASE_DIR/core/recon/checks/tls.sh"
+[ "$ENABLE_WHATWEB" = true ] && run_module_safe "WHATWEB" "$BASE_DIR/core/recon/checks/whatweb.sh"
+echo
 
-# Nmap (principal)
+echo "[*] Resolving target..."
+
+TARGET_IP=$(resolve_target "$TARGET")
+
+if [ -z "$TARGET_IP" ]; then
+    error "Unable to resolve $TARGET"
+    exit 1
+fi
+
+success "Resolved: $TARGET -> $TARGET_IP"
+
 [ "$ENABLE_NMAP" = true ] && run_module "NMAP" "$BASE_DIR/core/recon/checks/nmap/nmap.sh"
+[ "$ENABLE_NMAP" = true ] && run_module "NMAP" "$BASE_DIR/core/recon/checks/nmap/nmap.sh"
+
+########################################
+# TARGET PROFILE
+########################################
+
+if [ -f "$BASE_DIR/core/recon/profile/profile_builder.sh" ]; then
+
+    echo
+    echo "========== TARGET PROFILE =========="
+
+    bash "$BASE_DIR/core/recon/profile/profile_builder.sh" "$TARGET"
+
+fi
 
 # Web scan automático si se detectó HTTP
 if [ -f "$REPORT_DIR/nmap/discovery.txt" ]; then

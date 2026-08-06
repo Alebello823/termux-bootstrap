@@ -1,37 +1,47 @@
-#!/data/data/com.termux/files/usr/bin/bash
+#!/data/data/termux/files/usr/bin/bash
 
 TARGET="$1"
 PORTS="$2"
+OUTPUT_DIR="$3"
 
-echo "NMAP SERVICE SCAN"
-echo "-----------------"
 
-if [ -z "$TARGET" ]; then
-    echo "[WARN] Target missing"
+echo "NMAP SERVICE ENUMERATION"
+echo "------------------------"
+
+
+if [ -z "$TARGET" ] || [ -z "$PORTS" ]; then
+    echo "[WARN] Missing arguments"
     exit 1
 fi
 
-if [ -z "$PORTS" ]; then
-    echo "[WARN] Ports missing"
-    exit 1
-fi
 
-if ! command -v nmap >/dev/null 2>&1; then
-    echo "[WARN] nmap missing"
-    exit 1
-fi
+mkdir -p "$OUTPUT_DIR"
 
 
 echo "[INFO] Target: $TARGET"
 echo "[INFO] Ports: $PORTS"
 
+
 nmap \
+-Pn \
 -sT \
 -sV \
 -sC \
+--script vuln \
 -p "$PORTS" \
-"$TARGET"
+"$TARGET" \
+-oN "$OUTPUT_DIR/services.txt" \
+-oX "$OUTPUT_DIR/services.xml"
 
 
-echo
-echo "[OK] Service scan completed"
+
+if [ $? -eq 0 ]; then
+
+    echo "[OK] Service scan completed"
+
+else
+
+    echo "[ERROR] Service scan failed"
+    exit 1
+
+fi
