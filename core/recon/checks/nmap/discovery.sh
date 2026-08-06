@@ -20,8 +20,8 @@ nmap \
 -Pn \
 -n \
 -T4 \
---min-rate 5000 \
---max-retries 2 \
+--min-rate 1000 \
+--max-retries 3 \
 --open \
 -p- \
 "$TARGET" \

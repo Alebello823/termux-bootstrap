@@ -5,6 +5,7 @@ BASE_DIR="$HOME/termux-bootstrap"
 source "$BASE_DIR/core/logger.sh" 2>/dev/null || true
 source "$BASE_DIR/core/recon/cache.sh" 2>/dev/null || true
 
+export TB_REPORT_TARGET="$TARGET"
 
 TARGET="$1"
 
@@ -15,8 +16,11 @@ if [ -z "$TARGET" ]; then
 fi
 
 
-REPORT_DIR="$BASE_DIR/reports/recon/$TARGET/nmap"
+SCAN_TARGET="$1"
 
+REPORT_TARGET="${TB_REPORT_TARGET:-$SCAN_TARGET}"
+
+REPORT_DIR="$BASE_DIR/reports/recon/$REPORT_TARGET/nmap"
 mkdir -p "$REPORT_DIR"
 
 
@@ -38,7 +42,7 @@ echo "--------------------------------"
 
 
 bash "$BASE_DIR/core/recon/checks/nmap/discovery.sh" \
-"$TARGET" \
+"$SCAN_TARGET" \
 "$REPORT_DIR/discovery.txt"
 
 
@@ -89,7 +93,7 @@ echo "--------------------------------"
 
 
 bash "$BASE_DIR/core/recon/checks/nmap/service_scan.sh" \
-"$TARGET" \
+"$SCAN_TARGET" \
 "$PORTS" \
 "$REPORT_DIR"
 

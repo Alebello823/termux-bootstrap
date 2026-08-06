@@ -12,71 +12,97 @@ echo "[" > "$OUTPUT"
 
 FIRST=true
 
+
+extract_value() {
+    echo "$1" | sed 's/[",]//g' | awk -F': ' '{print $2}'
+}
+
+
 while read -r line
 do
 
-    ASSET=$(echo "$line" | grep '"asset"' | cut -d'"' -f4)
-
-    [ -z "$ASSET" ] && continue
+    [ -z "$line" ] && continue
 
 
-    TYPE="UNKNOWN"
+    if echo "$line" | grep -q '"asset"'; then
+
+        ASSET=$(echo "$line" | cut -d'"' -f4)
+
+        read -r IP_LINE
+        read -r PROVIDER_LINE
+        read -r SCORE_LINE
+        read -r SIGNAL_LINE
 
 
-    case "$ASSET" in
-
-        dev.*|*-dev*|*-development*)
-            TYPE="DEVELOPMENT"
-            ;;
-
-        *test*)
-            TYPE="TESTING"
-            ;;
-
-        *stage*|*staging*)
-            TYPE="STAGING"
-            ;;
-
-        *prod*)
-            TYPE="PRODUCTION"
-            ;;
-
-        www.*)
-            TYPE="PRODUCTION"
-            ;;
-
-        api.*)
-            TYPE="API"
-            ;;
-
-        mail.*)
-            TYPE="MAIL"
-            ;;
-
-        git*)
-            TYPE="DEVELOPMENT"
-            ;;
-
-        vpn*)
-            TYPE="ACCESS"
-            ;;
-
-    esac
+        IP=$(echo "$IP_LINE" | cut -d'"' -f4)
+        PROVIDER=$(echo "$PROVIDER_LINE" | cut -d'"' -f4)
+        SCORE=$(echo "$SCORE_LINE" | cut -d'"' -f4)
+        SIGNALS=$(echo "$SIGNAL_LINE" | cut -d'"' -f4)
 
 
-    if [ "$FIRST" = true ]; then
-        FIRST=false
-    else
-        echo "," >> "$OUTPUT"
-    fi
+        TYPE="UNKNOWN"
+
+
+        case "$ASSET" in
+
+            dev.*|*-dev*|*-development*)
+                TYPE="DEVELOPMENT"
+                ;;
+
+            test.*|*-test*)
+                TYPE="TESTING"
+                ;;
+
+            *stage*|*staging*)
+                TYPE="STAGING"
+                ;;
+
+            prod.*|*production*)
+                TYPE="PRODUCTION"
+                ;;
+
+            www.*)
+                TYPE="PRODUCTION"
+                ;;
+
+            api.*)
+                TYPE="API"
+                ;;
+
+            mail.*)
+                TYPE="MAIL"
+                ;;
+
+            git*|gitlab*)
+                TYPE="DEVELOPMENT"
+                ;;
+
+            vpn*)
+                TYPE="ACCESS"
+                ;;
+
+        esac
+
+
+        if [ "$FIRST" = true ]; then
+            FIRST=false
+        else
+            echo "," >> "$OUTPUT"
+        fi
 
 
 cat >> "$OUTPUT" <<EOF
 {
   "asset": "$ASSET",
+  "ip": "$IP",
+  "provider": "$PROVIDER",
+  "score": "$SCORE",
+  "signals": "$SIGNALS",
   "classification": "$TYPE"
 }
 EOF
+
+    fi
 
 
 done < "$INPUT"
@@ -85,4 +111,4 @@ done < "$INPUT"
 echo "]" >> "$OUTPUT"
 
 
-echo "[OK] Asset classification completed"
+echo "[OK] Inventory classification completed"

@@ -43,7 +43,7 @@ run_module_safe() {
             LIMIT=40
             ;;
         NMAP)
-            LIMIT=300
+            LIMIT=0
             ;;
         *)
             LIMIT=60
@@ -53,8 +53,13 @@ run_module_safe() {
 RAW_DIR="$BASE_DIR/reports/recon/$TARGET/raw"
 mkdir -p "$RAW_DIR"
 
-timeout "$LIMIT" bash "$SCRIPT" "$TARGET" | tee "$RAW_DIR/${NAME,,}.txt"
-
+    if [ "$LIMIT" -eq 0 ]; then
+        bash "$SCRIPT" "$TARGET" | tee "$RAW_DIR/${NAME,,}.txt"
+        EXIT_CODE=${PIPESTATUS[0]}
+    else
+        timeout "$LIMIT" bash "$SCRIPT" "$TARGET" | tee "$RAW_DIR/${NAME,,}.txt"
+        EXIT_CODE=${PIPESTATUS[0]}
+    fi
     local EXIT_CODE=$?
 
     local END=$(date +%s)
